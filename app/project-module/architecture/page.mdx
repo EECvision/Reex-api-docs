@@ -1,0 +1,46 @@
+# Architecture
+
+When you run the generator, Reex API Builder creates a structured `api-services` directory in the `src` folder of your project. Understanding this structure is key to leveraging the tool effectively.
+
+### Overview
+Here is the folder structure that gets generated:
+```
+src/
+└── api-services/
+    ├── config/
+    │   ├── clients.ts      # HTTP client instances
+    │   ├── constants.ts    # Base URLs and environment config
+    │   ├── core.ts         # Request interceptors & auth logic
+    │   ├── index.ts        # Config barrel export
+    │   ├── metadata.json   # Collection metadata
+    │   └── utils.ts        # Helper utilities
+    ├── definitions/        # Your API implementations (editable)
+    ├── generated/          # Auto-generated React Query hooks
+    ├── types/              # TypeScript interfaces
+    └── index.ts            # Main barrel export
+```
+
+### config/ - Configuration Files
+This folder contains the core configuration for the HTTP client:
+- **clients.ts**: Defines the Axios instances used for API calls.
+- **constants.ts**: Contains the `BASE_URL` extracted from your API spec. Update this to switch environments.
+- **core.ts**: Request/response interceptors and authorization header logic.
+- **metadata.json**: Stores information about the imported collection.
+- **utils.ts**: Utility functions for request handling.
+
+### definitions/ - The Source of Truth
+This is the most important folder. It contains the raw REST API implementations.
+- **Editable**: You are encouraged to edit these files to customize behavior.
+- **Structure**: Each file exports an API object with async functions for each endpoint.
+- **Two-Way Sync**: Changes here are reflected in the Reex API Builder UI.
+
+### generated/ - React Query Hooks
+This folder contains the React hooks generated from your definitions.
+- **Read-Only**: Do not edit these files. They are regenerated when definitions change.
+- **Auto Keys**: Query keys are generated automatically for caching.
+- **Auto Invalidation**: Mutation hooks invalidate related queries on success.
+
+### types/ - TypeScript Interfaces
+Contains the TypeScript interfaces for your API requests and responses.
+- **Organization**: Subfolders correspond to your API modules.
+- **Full Type Safety**: Automatically imported into definitions and hooks.

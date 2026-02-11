@@ -1,0 +1,49 @@
+# Getting Started
+
+Getting up and running with Reex API Builder is designed to be frictionless. The tool handles the heavy lifting of installing dependencies and setting up the required infrastructure in your React application.
+
+### Prerequisites
+Before installing, ensure your environment meets the following requirements:
+- **Node.js**: Installed and configured.
+- **React**: Your project must be a React-based application.
+- **Package Manager**: `npm`, `yarn`, or `pnpm`.
+
+### Step 1: Install the CLI
+Reex API Builder relies on a global CLI package to bridge the connection between the Reex API Builder (the UI) and your local project files.
+
+Open your terminal and install the builder globally:
+```bash
+npm install -g reex-api-builder
+```
+
+### Step 2: Initialize Your Project
+Navigate to the root directory of your React project. Run the initialization command to launch Reex API Builder in Project Mode:
+```bash
+reex-api
+```
+
+### Step 3: Automatic Dependency Management
+When you run the command above, Reex API Builder performs a health check on your project. It automatically detects if the necessary data-fetching libraries are present.
+
+If they are missing, Reex API Builder will install them for you automatically:
+- **Axios**: For handling HTTP requests.
+- **TanStack Query (React Query)**: For robust server state management.
+
+### Step 4: Configure the Provider
+Reex API Builder generates a dedicated Providers component to manage the query client context. You must wrap your application with this provider to enable the generated hooks.
+
+1. Open your project's root file (usually `App.tsx`, `main.tsx`, or `index.tsx`).
+2. Import the `QueryProvider` from the newly created `api-services/providers` folder.
+3. Wrap your root component:
+
+```tsx
+import { QueryProvider } from './api-services/providers';
+
+function App() {
+  return (
+    <QueryProvider>
+      <YourApp />
+    </QueryProvider>
+  );
+}
+```

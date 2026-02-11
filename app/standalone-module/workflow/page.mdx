@@ -1,0 +1,115 @@
+# The Workflow
+
+Standalone Mode follows a simple three-step workflow:
+
+### Step 1: Import a Collection
+Click the **Import** button in the toolbar to bring in your API collection.
+
+#### Supported Formats
+- **Swagger/OpenAPI** - JSON or YAML format
+- **Postman Collection** - JSON export from Postman
+
+#### Import Methods
+**From File:**
+1. Click "Import" -> "From File"
+2. Select your .json file (YAML import not yet implemented)
+3. Collection appears in the sidebar
+
+**From URL:**
+1. Click "Import" -> "From URL"
+2. Paste the API spec URL
+3. Click "Fetch"
+
+> **Tip:** You can import multiple collections. Each collection appears as a separate folder in the sidebar.
+
+### Step 2: Send a Request
+Once your collection is imported, you can start making requests.
+
+#### Selecting an Endpoint
+1. **Expand the collection** in the left sidebar
+2. **Click on any endpoint** (e.g., `GET /users`, `POST /login`)
+3. The request panel opens on the right
+
+#### Configuring the Request
+When you select an endpoint from your imported collection, **the request is automatically configured** with all parameters, headers, and body schema from the collection specification.
+
+**The Base URL:**
+- Automatically set from the collection
+- Displayed at the top of the request panel
+- **Editable** - click to modify if needed (e.g., switching from production to staging)
+
+**Set Parameters** (if needed):
+```text
+Query Params:
+  page: 1
+  limit: 10
+
+Path Params:
+  userId: 123
+
+Headers:
+  Authorization: Bearer <your-token>
+  Content-Type: application/json
+```
+
+**Add Request Body** (for POST/PUT/PATCH):
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com"
+}
+```
+
+**Set Authentication:**
+- Click the **Auth** tab
+- Choose **Bearer Token** (currently the only implemented auth type)
+- Enter your token
+
+#### Send the Request
+Click the **Send** button. Reex API Builder makes the request and displays the response in real-time.
+
+### Step 3: View Response and Interface
+After sending a request, you'll see two panels:
+
+#### Response Panel
+**Response Body:**
+```json
+{
+  "id": "user_123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "createdAt": "2025-02-07T10:30:00Z"
+}
+```
+
+**Status & Timing:**
+```text
+Status: 200 OK
+Time: 234ms
+Size: 156 bytes
+```
+
+#### Interface Panel (TypeScript)
+Reex automatically generates TypeScript interfaces from the response:
+```ts
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: string;
+}
+
+interface GetUserResponse {
+  data: User;
+  status: number;
+}
+```
+
+**Copy to Clipboard:**
+- Click the **Copy** icon to copy the interface
+- Paste directly into your TypeScript project
+
+> **Pro Tip:** The generated interfaces are production-ready and can be used immediately in your codebase.

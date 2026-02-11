@@ -1,0 +1,25 @@
+# Getting Started with Standalone Mode
+
+### Launching Standalone Mode
+Reex API Builder defaults to Standalone Mode when not connected to a project. Logically, the app operates in either Project Mode or Standalone Mode.
+
+**To use Standalone Mode:**
+
+Visit the web app directly:
+`https://reex-api-builder.vercel.app/`
+
+The app launches in Standalone Mode by default, ready for you to import and test collections.
+
+### Switching from Project Mode
+If you're currently in Project Mode and want to switch to Standalone:
+
+1. **Stop the Project Bridge** - First, stop the `reex-api-bridge` from watching your project
+```bash
+# In your terminal where reex-api-bridge is running
+Ctrl + C  # or Cmd + C on Mac
+```
+2. **Launch in Standalone Mode**
+```bash
+reex-api-builder --standalone
+```
+> **Important:** You must stop the project bridge before switching to Standalone Mode. Running both simultaneously can cause conflicts.

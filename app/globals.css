@@ -1,0 +1,47 @@
+/* Font setup */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* RainbowKit Blue */
+    --nextra-primary-hue: 210deg;
+    --nextra-primary-saturation: 100%;
+
+    /* Backgrounds */
+    --sh-block-bg: #f6f7f9;
+}
+
+[class*='dark'] {
+    --sh-block-bg: #111;
+    --nextra-bg: #000;
+}
+
+body {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Customizing the sidebar to look like RainbowKit */
+aside {
+    background-color: transparent !important;
+}
+
+/* Navbar adjustments */
+nav {
+    backdrop-filter: blur(12px);
+}
+
+/* Code block adjustments */
+pre {
+    border-radius: 12px !important;
+}
+
+/* Card adjustments (if we use Cards) */
+.nextra-card {
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.nextra-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
