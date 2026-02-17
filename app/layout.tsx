@@ -9,6 +9,11 @@ export const metadata = {
     description: 'Documentation for Reex API Builder',
 }
 
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+}
+
 const footer = (
     <Footer>
         MIT {new Date().getFullYear()} © Reex API Builder.
@@ -17,16 +22,28 @@ const footer = (
 
 const navbar = (
     <Navbar
-        logo={<b>Reex API Builder</b>}
-        projectLink="https://github.com/EECvision/Reex-api-client"
-    />
+        logo={<img src="/docs/logo.svg" alt="Reex API Builder" style={{ height: '32px' }} />}
+    >
+        <a
+            href="https://reex-api-builder.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="get-started-button"
+        >
+            Get Started
+        </a>
+    </Navbar>
 )
+
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
             <Head />
-            <body>
+            <body className={inter.className}>
                 <Layout
                     navbar={navbar}
                     // @ts-ignore

@@ -17,11 +17,15 @@
 
 body {
     font-family: 'Inter', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Customizing the sidebar to look like RainbowKit */
-aside {
-    background-color: transparent !important;
+@media (min-width: 768px) {
+    aside {
+        background-color: transparent !important;
+    }
 }
 
 /* Navbar adjustments */
@@ -44,4 +48,175 @@ pre {
 .nextra-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   RainbowKit-style Search Modal
+   ============================================ */
+
+/* Backdrop overlay when search results are visible */
+.nextra-search-results {
+    /* Override Headless UI anchor positioning */
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+
+    /* Modal sizing */
+    width: min(90vw, 640px) !important;
+    max-height: min(80vh, 500px) !important;
+
+    /* Modal styling */
+    border-radius: 16px !important;
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    padding: 0 !important;
+    padding-bottom: 8px !important;
+    overflow-y: auto !important;
+    z-index: 100 !important;
+}
+
+[class*='dark'] .nextra-search-results {
+    background: #1a1a2e !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Backdrop behind modal — only visible when search results are open */
+[data-headlessui-portal]:has(.nextra-search-results:not([data-closed]):not(:empty)) {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99 !important;
+    background: rgba(255, 255, 255, 0.7);
+    pointer-events: auto;
+}
+
+[class*='dark'] [data-headlessui-portal]:has(.nextra-search-results:not([data-closed]):not(:empty)) {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Search input inside the modal — when focused, make it look like a modal header */
+.nextra-search input[type="search"] {
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 16px !important;
+}
+
+.nextra-search input[type="search"]:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: 2px solid hsl(210, 100%, 50%) !important;
+    outline-offset: -2px;
+}
+
+/* Result items — RainbowKit style */
+.nextra-search-results a {
+    margin: 2px 10px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+/* Active/focused result — blue highlight like RainbowKit */
+.nextra-search-results a[data-focus] {
+    background: hsl(210, 100%, 50%) !important;
+    color: white !important;
+}
+
+.nextra-search-results a[data-focus] div {
+    color: white !important;
+}
+
+/* Section headers */
+.nextra-search-results>div:not(a) {
+    padding: 8px 14px 4px !important;
+    margin: 4px 10px 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #6b7280 !important;
+}
+
+/* Result title */
+.nextra-search-results a div:first-child {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+/* Result excerpt/subtitle */
+.nextra-search-results a div:last-child {
+    font-size: 12px !important;
+    opacity: 0.7;
+}
+
+.nextra-search-results a[data-focus] div:last-child {
+    opacity: 0.9;
+}
+
+/* Fix scale transform on open/close so it doesn't conflict with our centering transform */
+.nextra-search-results[data-closed] {
+    transform: translate(-50%, -50%) scale(0.97) !important;
+    opacity: 0 !important;
+}
+
+/* Get Started Button */
+.get-started-button {
+    background-color: black;
+    color: white !important;
+    /* Force override Nextra link styles */
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+}
+
+[class*='dark'] .get-started-button {
+    background-color: white;
+    color: black !important;
+}
+
+.get-started-button:hover {
+    opacity: 0.8;
+}
+
+@media (max-width: 640px) {
+    .get-started-button {
+        display: none;
+        /* Hide on mobile if desired, or remove this to show always */
+    }
+}
+
+/* Navbar Border */
+.nextra-navbar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[class*='dark'] .nextra-navbar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Footer Navigation Links (Previous/Next) */
+div.nextra-border a {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+/* TOC Bottom Links (Edit this page / Feedback) */
+.nextra-toc div.nextra-border a {
+    font-size: 0.8em !important;
+    /* Smaller size to match TOC items */
+    font-weight: 500 !important;
+    color: #666;
 }

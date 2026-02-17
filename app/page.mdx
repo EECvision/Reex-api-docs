@@ -3,6 +3,20 @@ import { Box, Terminal, Code } from 'lucide-react'
 
 # Introduction & Philosophy
 
+<br />
+
+<video
+  controls
+  muted
+  playsInline
+  loop
+  poster="/docs/video-poster.jpg"
+  style={{ width: '100%', height: '400px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}
+>
+  <source src="/docs/demo-video.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
 ### What is Reex API Builder?
 Reex API Builder is a developer-first tool designed to streamline the lifecycle of API testing and integration. While traditional tools focus heavily on backend verification, Reex API Builder is built specifically with the Frontend Developer in mind.
 
@@ -20,7 +34,13 @@ Reex API Builder eliminates this boilerplate.
 Reex API Builder is composed of three powerful modules to suit different stages of development:
 
 <Cards>
-  <Cards.Card icon={<Box />} title="Project Module" href="/project-module" />
-  <Cards.Card icon={<Terminal />} title="Standalone Module" href="/standalone-module" />
-  <Cards.Card icon={<Code />} title="Test Module" href="/test-module" />
+  <Cards.Card icon={<Box />} title="Project Module" href="/project-module">
+    Directly integrate Reex with your local React application.
+  </Cards.Card>
+  <Cards.Card icon={<Terminal />} title="Standalone Module" href="/standalone-module">
+    Import and manage collections independently of a project.
+  </Cards.Card>
+  <Cards.Card icon={<Code />} title="Test Module" href="/test-module">
+    Rapidly test and experiment with API endpoints.
+  </Cards.Card>
 </Cards>
