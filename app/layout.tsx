@@ -25,7 +25,7 @@ const navbar = (
         logo={<img src="/docs/logo.svg" alt="Reex API Builder" style={{ height: '32px' }} />}
     >
         <a
-            href="https://reex-api-builder.vercel.app/"
+            href="https://reex-api-builder.toolshq.app/"
             target="_blank"
             rel="noopener noreferrer"
             className="get-started-button"

@@ -3,7 +3,7 @@
 Project Mode connects the builder UI directly to your local codebase, creating a seamless loop between your API specifications and your frontend logic.
 
 ### Step 1: Import
-Launch the builder using `reex-api`. Click **Import** to bring in your API collection.
+Launch the builder using `reex-build`. Click **Import** to bring in your API collection.
 - **Supported Formats**: Swagger/OpenAPI, Postman JSON.
 - **Result**: Reex API Builder parses the file and prepares it for analysis.
 
@@ -12,11 +12,14 @@ Once imported, click **Analyze**. The tool reviews the collection structure.
 
 Click **Update Selected** to generate the code.
 
-Reex API Builder immediately creates the `api-services` folder structure in your project.
+Reex API Builder updates the `api-services` folder in your project (the folder is initially created when you launch the UI with the `reex-build` command). At this stage, it:
+- **Adds the `definitions` folder**: Contains the REST API version of the imported collection.
+- **Updates the `generated` folder**: Generates the React Query version of the definitions.
+- **Generates the `types` folder**: Automatically creates TypeScript interfaces for all endpoints.
 
 ### Step 3: The Two-Way Sync
 Reex API Builder maintains a live link between the UI and your code.
-- **UI to Code**: Changes made in the Reex API Builder (like renaming an endpoint) are written to your definitions files.
+- **UI to Code**: Actions in the Reex API Builder UI, such as saving a generated interface, deleting an API or module, deleting a collection, or generating an API template, are automatically written to your local `definitions` files.
 - **Code to UI**: Because `definitions` is the single source of truth, you can manually edit the TypeScript files in your IDE. The Reex API Builder UI will automatically detect these changes and update its display.
 
 ### Step 4: Handling Updates (Diff View)
