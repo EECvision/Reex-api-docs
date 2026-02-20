@@ -19,8 +19,20 @@ Reex API Builder updates the `api-services` folder in your project (the folder i
 
 ### Step 3: The Two-Way Sync
 Reex API Builder maintains a live link between the UI and your code.
-- **UI to Code**: Actions in the Reex API Builder UI, such as saving a generated interface, deleting an API or module, deleting a collection, or generating an API template, are automatically written to your local `definitions` files.
-- **Code to UI**: Because `definitions` is the single source of truth, you can manually edit the TypeScript files in your IDE. The Reex API Builder UI will automatically detect these changes and update its display.
+- **UI to Code**: Actions in the Reex API Builder UI are automatically written to your local files. Generated interfaces are saved to your `types` files, while actions like deleting an API or module, deleting a collection, or generating an API template update your `definitions` files.
+- **Code to UI**: Because `definitions` is the single source of truth, you can manually edit the TypeScript files in your IDE and the Reex API Builder UI will automatically detect these changes and update its display. Two files influence the UI:
+
+  * **`config/constants`** — update the `baseURL` value to change the base URL across all requests.
+  * **`definitions` files** — update individual API request functions directly. When doing so, ensure each endpoint function always accepts exactly one parameter — either a single primitive (e.g., `id: string`) or a single object (e.g., `{ id, payload }: { id: string, payload: UpdatePayload }`).
+```typescript
+    // ❌ Not acceptable — multiple parameters
+    post_sendMessage: (channelId: string, payload: MessagePayload): Promise =>
+      apiClient.post(`/channels/${channelId}/messages`, payload)
+
+    // ✅ Acceptable — single object parameter
+    post_sendMessage: ({ channelId, payload }: { channelId: string, payload: MessagePayload }): Promise =>
+      apiClient.post(`/channels/${channelId}/messages`, payload)
+```
 
 ### Step 4: Handling Updates (Diff View)
 APIs change. When you re-import an updated Swagger or Postman file, Reex API Builder protects your code from silent overwrites.
