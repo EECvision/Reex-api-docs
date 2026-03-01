@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* Font setup */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -230,6 +231,7 @@ div.nextra-border a {
     font-weight: 500 !important;
     color: #666;
 }
+
 
 /* ============================================
    Nextra 4 / Tailwind v4 Responsive Fix
