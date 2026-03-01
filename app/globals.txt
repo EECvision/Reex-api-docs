@@ -1,0 +1,62 @@
+
+/* ============================================
+   Sidebar Font Size — match Next.js docs
+   ============================================ */
+
+/* Top-level sidebar items */
+.nextra-sidebar li a,
+.nextra-sidebar li button {
+    font-size: 13px !important;
+}
+
+/* Nested sidebar items */
+.nextra-sidebar li li a,
+.nextra-sidebar li li button {
+    font-size: 13px !important;
+}
+
+/* Sidebar section headers */
+.nextra-sidebar .x\:text-xs,
+.nextra-sidebar [class*='x:text-'] {
+    font-size: 13px !important;
+}
+
+/* Nextra 4 specific */
+.x\:text-sm {
+    font-size: 13px !important;
+    line-height: 1.5rem !important;
+}
+
+/* ============================================
+   Main Content Typography — match Next.js docs
+   ============================================ */
+
+/* Paragraphs — already done */
+p[class*='x:leading-7'] {
+    font-size: 14px !important;
+    line-height: 1.75rem !important;
+}
+
+/* h1 */
+h1[class*='x:tracking-tight'] {
+    font-size: 1.875rem !important;
+    /* 30px — down from 36px */
+}
+
+/* h2 */
+h2[class*='x:tracking-tight'] {
+    font-size: 1.375rem !important;
+    /* 22px */
+}
+
+/* h3 */
+h3[class*='x:tracking-tight'] {
+    font-size: 1.125rem !important;
+    /* 18px — down from 24px */
+}
+
+/* List items — both ul and ol */
+li[class*='x:my-'] {
+    font-size: 14px !important;
+    line-height: 1.75rem !important;
+}

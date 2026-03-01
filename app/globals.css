@@ -127,7 +127,7 @@ div.nextra-border a {
    TOC Bottom Links (Edit this page / Feedback)
    ============================================ */
 .nextra-toc div.nextra-border a {
-    font-size: 0.8em !important;
+    font-size: 13px !important;
     font-weight: 500 !important;
     color: #666;
 }
