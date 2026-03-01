@@ -1,46 +1,1049 @@
+import { Tabs } from 'nextra/components'
+
 # Architecture
 
 When you run the generator, Reex API Builder creates a structured `api-services` directory in the `src` folder of your project. Understanding this structure is key to leveraging the tool effectively.
 
-### Overview
+### Folder Structure Diagram
+
 Here is the folder structure that gets generated:
+
 ```
 src/
 └── api-services/
-    ├── config/
-    │   ├── clients.ts      # HTTP client instances
-    │   ├── constants.ts    # Base URLs and environment config
-    │   ├── core.ts         # Request interceptors & auth logic
-    │   ├── index.ts        # Config barrel export
-    │   ├── metadata.json   # Collection metadata
-    │   └── utils.ts        # Helper utilities
-    ├── definitions/        # Your API implementations (editable)
-    ├── generated/          # Auto-generated React Query hooks
-    ├── types/              # TypeScript interfaces
-    └── index.ts            # Main barrel export
+    ├── auth/             # Authentication strategies and guards
+    ├── config/           # Core HTTP configuration
+    ├── definitions/      # Your API implementations (editable)
+    ├── generated/        # Auto-generated React Query hooks
+    ├── hooks/            # Authentication & custom hooks
+    ├── providers/        # Application providers
+    ├── types/            # TypeScript interfaces
+    └── index.ts          # Main barrel export
 ```
 
-### config/ - Configuration Files
-This folder contains the core configuration for the HTTP client:
-- **clients.ts**: Defines the Axios instances used for API calls.
-- **constants.ts**: Contains the `BASE_URL` extracted from your API spec. Update this to switch environments.
-- **core.ts**: Request/response interceptors and authorization header logic.
-- **metadata.json**: Stores information about the imported collection.
-- **utils.ts**: Utility functions for request handling.
+### `config/` - Configuration Files
 
-### definitions/ - The Source of Truth
+This folder contains the core configuration for the HTTP client. Click the tabs below to view the contents of each configuration file:
+
+<Tabs items={['authConfig.ts', 'clients.ts', 'constants.ts', 'core.ts']}>
+  <Tabs.Tab>
+    **`authConfig.ts`**: Centralized authentication configuration.
+
+    ```typescript filename="config/authConfig.ts"
+    // @user-config — changes needed: Update routes, keys, and endpoints to match your backend
+    import axios from "axios";
+    import { baseURL } from "./constants";
+
+    /**
+     * Centralized Authentication Configuration
+     * 
+     * Customize these values and functions to match your backend's
+     * authentication requirements.
+     */
+    export const authConfig = {
+        /** Redirect path for unauthenticated users */
+        loginUrl: "/auth/login",
+
+        /** Server-side logout endpoint */
+        logoutUrl: "/api/logout",
+
+        /** localStorage key for access token */
+        accessTokenKey: "access_token",
+
+        /** localStorage key for refresh token (if applicable) */
+        refreshTokenKey: "refresh_token",
+
+
+        /** Refresh token endpoint */
+        refreshEndpoint: `${baseURL}/api/v1/auth/refresh`,
+
+        /** Refresh via httpOnly cookie. Edit the method/headers to match your backend. */
+        refreshWithCookie: async () => {
+            return await axios.get(authConfig.refreshEndpoint);
+        },
+
+        /** Refresh via stored token payload. Edit the property name to match your backend. */
+        refreshWithPayload: async (storedRefreshToken: string) => {
+            return await axios.post(authConfig.refreshEndpoint, {
+                refresh_token: storedRefreshToken,
+            });
+        }
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`clients.ts`**: Configuration for API clients.
+
+    ```typescript filename="config/clients.ts"
+    // @user-config — changes needed: Uncomment the auth strategy that matches your authentication strategy
+
+    /**
+     * Available auth strategies:
+     *   cookieTokenProvider       → httpOnly cookie, server-managed refresh tokens
+     *   nextAuthTokenProvider     → NextAuth.js session management
+     *   localStorageTokenProvider → client-side token storage with refresh in localStorage
+     */
+
+    import { createApiClient } from "./core";
+    // import { cookieTokenProvider }        from "../auth/CookieAuth/CookieTokenProvider";
+    // import { nextAuthTokenProvider }      from "../auth/NextAuth/NextAuthTokenProvider";
+    import { localStorageTokenProvider } from "../auth/LocalStorageAuth/LocalStorageTokenProvider";
+
+    export const activeTokenProvider = localStorageTokenProvider;
+
+    /** Configured API client using the active token provider */
+    export const apiClient = createApiClient(activeTokenProvider);
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`constants.ts`**: Base URLs and environment config.
+
+    ```typescript filename="config/constants.ts"
+    export const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.orki.io";
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`core.ts`**: Request interceptors & auth logic.
+
+    ```typescript filename="config/core.ts"
+    // @internal — No changes needed
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    import axios, {
+        AxiosInstance,
+        InternalAxiosRequestConfig,
+        AxiosError,
+        AxiosRequestConfig,
+    } from "axios";
+    import { baseURL } from "./constants";
+
+    const API_TIMEOUT = 30000;
+    const REFRESH_TIMEOUT = 10000;
+
+    /** Pluggable authentication strategy */
+    export interface TokenProvider {
+        /** Get current access token */
+        getToken: () => Promise<string | null> | string | null;
+
+        /** Refresh expired token */
+        refreshToken?: () => Promise<string | null>;
+
+        /** Return custom headers to inject into all requests */
+        getCustomHeaders?: () =>
+            | Promise<Record<string, string>>
+            | Record<string, string>;
+
+        /** Replace custom headers for all future requests */
+        setCustomHeaders?: (headers: Record<string, string>) => void;
+    }
+
+    /** Standardized API error response */
+    export interface ApiError {
+        message: string;
+        code?: string;
+        statusCode?: number;
+        originalError?: unknown;
+    }
+
+    const DEFAULT_CONFIG: AxiosRequestConfig = {
+        baseURL: baseURL,
+        timeout: API_TIMEOUT,
+        headers: { "Content-Type": "application/json" },
+    };
+
+    /** Creates an Axios client with auto token injection and 401 refresh/retry */
+    export const createApiClient = (
+        tokenProvider?: TokenProvider,
+    ): AxiosInstance => {
+        const client = axios.create(DEFAULT_CONFIG);
+
+        let isRefreshing = false;
+        let failedQueue: Array<{
+            resolve: (token: string | null) => void;
+            reject: (error: any) => void;
+        }> = [];
+
+        const processQueue = (error: any, token: string | null = null) => {
+            failedQueue.forEach((prom) => {
+                if (error) {
+                    prom.reject(error);
+                } else {
+                    prom.resolve(token);
+                }
+            });
+            failedQueue = [];
+        };
+
+        // Request interceptor: inject token + custom headers
+        client.interceptors.request.use(
+            async (config: InternalAxiosRequestConfig) => {
+                if (tokenProvider) {
+                    const token = await tokenProvider.getToken();
+                    if (token && config.headers) {
+                        config.headers.Authorization = `Bearer ${token}`;
+                    }
+
+
+                    const customHeaders = await tokenProvider.getCustomHeaders?.();
+                    if (customHeaders && config.headers) {
+                        Object.entries(customHeaders).forEach(([key, value]) => {
+                            config.headers[key] = value;
+                        });
+                    }
+                }
+
+
+                if (process.env.NODE_ENV === "development") {
+                    console.log(
+                        `[API Request] ${config.method?.toUpperCase()} ${config.url}`,
+                        config.params || config.data,
+                    );
+                }
+
+                return config;
+            },
+            (error) => Promise.reject(error),
+        );
+
+        // Response interceptor: unwrap data, handle 401 refresh, normalize errors
+        client.interceptors.response.use(
+            (response) => {
+                const res = response?.data?.data ?? response?.data;
+
+                if (process.env.NODE_ENV === "development") {
+                    console.log(
+                        `[API Success] ${response.config.method?.toUpperCase()} ${response.config.url}`,
+                        res,
+                    );
+                }
+
+                return res;
+            },
+            async (error: AxiosError) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & {
+                    _retry?: boolean;
+                };
+
+                // Handle 401 with token refresh
+                if (
+                    error.response?.status === 401 &&
+                    !originalRequest._retry &&
+                    tokenProvider?.refreshToken
+                ) {
+                    if (isRefreshing) {
+                        return new Promise<string | null>((resolve, reject) => {
+                            const timeoutId = setTimeout(() => {
+                                reject(
+                                    new Error("Token refresh timeout - request took too long"),
+                                );
+                            }, REFRESH_TIMEOUT);
+
+                            failedQueue.push({
+                                resolve: (token) => {
+                                    clearTimeout(timeoutId);
+                                    resolve(token);
+                                },
+                                reject: (err) => {
+                                    clearTimeout(timeoutId);
+                                    reject(err);
+                                },
+                            });
+                        })
+                            .then((token) => {
+                                if (token && originalRequest.headers) {
+                                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                                }
+                                return client(originalRequest);
+                            })
+                            .catch((err) => Promise.reject(err));
+                    }
+
+                    originalRequest._retry = true;
+                    isRefreshing = true;
+
+                    try {
+                        const newToken = await tokenProvider.refreshToken();
+
+                        if (newToken && originalRequest.headers) {
+                            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                            processQueue(null, newToken);
+                            return client(originalRequest);
+                        }
+
+                        throw new Error("Refresh failed to return a valid token");
+                    } catch (refreshError) {
+                        processQueue(refreshError, null);
+
+                        // Dispatch logout event on refresh failure
+                        if (typeof window !== "undefined") {
+                            window.dispatchEvent(new Event("auth:logout"));
+                        }
+                        return Promise.reject(refreshError);
+                    } finally {
+                        isRefreshing = false;
+                    }
+                }
+
+                // Normalize error
+                const responseData = error.response?.data as any;
+                const apiError: ApiError = {
+                    message:
+                        responseData?.message ||
+                        error.message ||
+                        "An unexpected error occurred",
+                    code: responseData?.code,
+                    statusCode: error.response?.status,
+                    originalError: error,
+                };
+
+                if (originalRequest) {
+                    const endpoint = `${originalRequest.method?.toUpperCase()} ${originalRequest.url}`;
+                    console.error(`[API ERROR - ${endpoint}]`, {
+                        message: apiError.message,
+                        code: apiError.code,
+                        statusCode: apiError.statusCode,
+                    });
+                }
+
+                throw apiError;
+            },
+        );
+
+        return client;
+    };
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `definitions/` - The Source of Truth
+
 This is the most important folder. It contains the raw REST API implementations.
 - **Editable**: You are encouraged to edit these files to customize behavior.
 - **Structure**: Each file exports an API object with async functions for each endpoint.
 - **Two-Way Sync**: Changes here are reflected in the Reex API Builder UI.
 
-### generated/ - React Query Hooks
+<Tabs items={['authentication.ts']}>
+  <Tabs.Tab>
+    ```typescript filename="definitions/authentication.ts"
+    import { apiClient } from "../config";
+    import { post_freelancerRegister } from "../types/authentication/post_freelancerRegister";
+    import { post_businessRegister } from "../types/authentication/post_businessRegister";
+    import { post_login } from "../types/authentication/post_login";
+    import { get_logout } from "../types/authentication/get_logout";
+
+    interface FreelancerRegisterPayload {
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      country?: string;
+      phone?: string;
+      freelance_category_id?: number;
+      password?: string;
+    }
+
+    interface BusinessRegisterPayload {
+      company_name?: string;
+      website?: string;
+      email?: string;
+      country?: string;
+      phone?: string;
+      business_category_id?: number;
+      password?: string;
+    }
+
+    interface LoginPayload {
+      otp?: number;
+      invite_token?: string;
+      email?: string;
+      password?: string;
+    }
+
+    export const authenticationApi = {
+      post_freelancerRegister: (payload: FreelancerRegisterPayload): Promise<post_freelancerRegister> =>
+        apiClient.post(`/api/freelancer/register`, payload),
+
+      post_businessRegister: (payload: BusinessRegisterPayload): Promise<post_businessRegister> =>
+        apiClient.post(`/api/business/register`, payload),
+
+      post_login: (payload: LoginPayload): Promise<post_login> =>
+        apiClient.post(`/api/login`, payload),
+
+      /** @auth */
+      get_logout: (): Promise<get_logout> =>
+        apiClient.get(`/api/logout`),
+    };
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `generated/` - React Query Hooks
+
 This folder contains the React hooks generated from your definitions.
 - **Read-Only**: Do not edit these files. They are regenerated when definitions change.
 - **Auto Keys**: Query keys are generated automatically for caching.
 - **Auto Invalidation**: Mutation hooks invalidate related queries on success.
 
-### types/ - TypeScript Interfaces
+<Tabs items={['index.ts', 'useAuthenticationQueries.ts']}>
+  <Tabs.Tab>
+    **`index.ts`**: Auto-generated React Query wrapper hooks.
+
+    ```typescript filename="generated/index.ts"
+    // Generated file - DO NOT EDIT
+    import {
+      type QueryKey,
+      type UseMutationOptions,
+      type UseQueryOptions,
+      type UseQueryResult,
+      type DefaultError,
+      useMutation,
+      useQuery,
+    } from "@tanstack/react-query";
+
+    // 1. Mutation Wrapper
+    export const useApiMutation = <
+      TData = unknown,
+      TVariables = void,
+      TError = DefaultError,
+      TContext = unknown,
+    >(
+      mutationFn: (variables: TVariables) => Promise<TData>,
+      options?: Omit<
+        UseMutationOptions<TData, TError, TVariables, TContext>,
+        "mutationFn"
+      >,
+    ) => {
+      return useMutation<TData, TError, TVariables, TContext>({
+        mutationFn,
+        ...options,
+      });
+    };
+
+    // 2. Query Wrapper
+    export const useApiQuery = <
+      TQueryFnData = unknown,
+      TError = DefaultError,
+      TData = TQueryFnData,
+      TQueryKey extends QueryKey = QueryKey,
+    >(
+      queryKey: TQueryKey,
+      queryFn: () => Promise<TQueryFnData>,
+      options?: Omit<
+        UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+        "queryKey" | "queryFn"
+      >,
+    ): UseQueryResult<TData, TError> => {
+      return useQuery<TQueryFnData, TError, TData, TQueryKey>({
+        queryKey,
+        queryFn,
+        refetchOnWindowFocus: false,
+        retry: 1,
+        ...options,
+      });
+    };
+
+    export * from "./useAuthenticationQueries";
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`useAuthenticationQueries.ts`**: Automatically generated hooks based on the OpenAPI definitions.
+
+    ```typescript filename="generated/useAuthenticationQueries.ts"
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    // Generated file - DO NOT EDIT
+    import { useQueryClient, type UseMutationOptions, type UseQueryOptions } from "@tanstack/react-query";
+    import { authenticationApi } from "../definitions/authentication";
+    import { useApiQuery, useApiMutation } from ".";
+
+    // Helper Types
+    type ApiData<T extends (...args: any) => any> = Awaited<ReturnType<T>>;
+    type ApiVars<T extends (...args: any) => any> = Parameters<T>[0];
+
+    export const authenticationKeys = {
+      all: ["authentication"] as const,
+      get_logout: (params?: ApiVars<typeof authenticationApi.get_logout>) => [...authenticationKeys.all, "get_logout", params] as const,
+    };
+
+    export const usePostLoginMutation = (
+      options?: Omit<
+        UseMutationOptions<ApiData<typeof authenticationApi.post_login>, Error, ApiVars<typeof authenticationApi.post_login>>,
+        "mutationFn"
+      >
+    ) => {
+      const queryClient = useQueryClient();
+
+      return useApiMutation(authenticationApi.post_login, {
+        ...options,
+        onSuccess: (data, variables, context) => {
+          queryClient.invalidateQueries({ queryKey: authenticationKeys.all });
+          (options?.onSuccess as any)?.(data, variables, context);
+        },
+      });
+    };
+
+    /**
+     * @auth
+     */
+    export const useGetLogoutQuery = <TData = ApiData<typeof authenticationApi.get_logout>>(
+      options?: Omit<
+        UseQueryOptions<ApiData<typeof authenticationApi.get_logout>, Error, TData>,
+        "queryKey" | "queryFn"
+      >
+    ) =>
+      useApiQuery(
+        authenticationKeys.get_logout(),
+        () => authenticationApi.get_logout(),
+        options
+      );
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `hooks/` - Custom Hooks
+
+This folder contains additional custom hooks derived from your definitions, primarily for authentication handling.
+
+<Tabs items={['useAuth.ts']}>
+  <Tabs.Tab>
+    **`useAuth.ts`**: Login and logout handling with the chosen token provider.
+
+    ```typescript filename="hooks/useAuth.ts"
+    import { useCallback } from "react";
+    import { usePostLoginMutation } from "../generated/useAuthenticationQueries";
+    import { apiClient } from "../config/clients";
+    import { authConfig } from "../config/authConfig";
+
+    /**
+     * Login hook that stores tokens on success via the active provider.
+     */
+    export const useLogin = () => {
+        const setCustomHeaders = useCallback((headers: Record<string, string>) => {
+            const provider = getActiveProvider();
+            provider?.setCustomHeaders?.(headers);
+        }, []);
+
+        const mutation = usePostLoginMutation({
+            onSuccess: (data: any) => {
+                const accessToken = data?.accessToken ?? data?.access_token ?? data?.token;
+                const refreshToken = data?.refreshToken ?? data?.refresh_token;
+
+                if (accessToken) {
+                    const provider = getActiveProvider();
+                    provider?.setTokens?.({ accessToken, refreshToken });
+                }
+            },
+        });
+
+        return {
+            login: mutation.mutate,
+            loginAsync: mutation.mutateAsync,
+            setCustomHeaders,
+            ...mutation,
+        };
+    };
+
+    /**
+     * Logout hook that clears tokens and optionally calls the server logout endpoint.
+     */
+    export const useLogout = (options?: { callServer?: boolean }) => {
+        const { callServer = true } = options ?? {};
+        const provider = getActiveProvider();
+
+        const logout = useCallback(async () => {
+            try {
+                if (callServer) {
+                    try {
+                        await apiClient.get(authConfig.logoutUrl);
+                    } catch {
+                        console.warn("[useLogout] Server logout failed, clearing local tokens");
+                    }
+                }
+                provider?.clearTokens?.();
+            } catch (error) {
+                console.error("[useLogout] Logout failed:", error);
+                provider?.clearTokens?.();
+            }
+        }, [callServer, provider]);
+
+        return { logout };
+    };
+
+    // Resolve the active token provider from clients.ts
+    function getActiveProvider(): any {
+        try {
+            const clients = require("../config/clients");
+            return clients.activeTokenProvider || null;
+        } catch {
+            return null;
+        }
+    }
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `auth/` - Authentication Strategies
+
+Contains authentication providers and guards for different strategies.
+
+<Tabs items={['Cookie Token Provider', 'Cookies Auth Guard', 'Local Storage Token Provider', 'Local Storage Auth Guard', 'NextAuth Token Provider', 'NextAuth Guard']}>
+  <Tabs.Tab>
+    **`CookieTokenProvider.ts`**: Hybrid Token Provider using cookies.
+
+    ```typescript filename="auth/CookieAuth/CookieTokenProvider.ts"
+    // @internal — No changes needed
+    import { TokenProvider } from "../../config";
+    import { authConfig } from "../../config/authConfig";
+
+    let accessToken: string | null = null;
+
+    interface CookieTokenProvider extends TokenProvider {
+        setTokens: (params: { accessToken: string; refreshToken?: string }) => void;
+        clearTokens: () => void;
+    }
+
+    /**
+     * Hybrid Token Provider
+     * - Access Token: Managed in memory (primary) & localStorage (fallback)
+     * - Refresh Mechanism: Automatic via httpOnly cookies
+     * 
+     * Edit `authConfig.ts` to customize routes and storage keys.
+     */
+
+    export const cookieTokenProvider: CookieTokenProvider = {
+        getToken: () => {
+            if (accessToken) return accessToken;
+            if (typeof window !== "undefined") {
+                return localStorage.getItem(authConfig.accessTokenKey);
+            }
+            return null;
+        },
+
+        setTokens: ({ accessToken: newAccessToken }) => {
+            accessToken = newAccessToken;
+            if (typeof window !== "undefined") {
+                localStorage.setItem(authConfig.accessTokenKey, newAccessToken);
+            }
+        },
+
+        clearTokens: () => {
+            accessToken = null;
+            if (typeof window !== "undefined") {
+                localStorage.removeItem(authConfig.accessTokenKey);
+            }
+        },
+
+        refreshToken: async () => {
+            try {
+                const response = await authConfig.refreshWithCookie();
+                accessToken = response.data.accessToken;
+                if (typeof window !== "undefined" && accessToken) {
+                    localStorage.setItem(authConfig.accessTokenKey, accessToken);
+                }
+
+                return accessToken;
+            } catch {
+                // Fallback: use stored access token if cookie refresh failed
+                if (typeof window !== "undefined") {
+                    const storedAccessToken = localStorage.getItem(authConfig.accessTokenKey);
+                    if (storedAccessToken) {
+                        accessToken = storedAccessToken;
+                        return accessToken;
+                    }
+                    localStorage.removeItem(authConfig.accessTokenKey);
+                }
+
+                accessToken = null;
+                return null;
+            }
+        },
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`CookieAuthGuard.tsx`**: Auth Guard for cookie strategy.
+
+    ```tsx filename="auth/CookieAuth/CookieAuthGuard.tsx"
+    // @internal — No changes needed
+    "use client";
+
+    import { useEffect, useState } from "react";
+    import { cookieTokenProvider } from "./CookieTokenProvider";
+
+    /**
+     * Restores the user session on mount via the refresh endpoint.
+     * Wrap your root layout with `<CookieAuthGuard>`. Configure in `authConfig.ts`.
+     */
+
+    export const CookieAuthGuard = ({
+        children,
+    }: {
+        children: React.ReactNode;
+    }) => {
+        const [isReady, setIsReady] = useState(false);
+
+        useEffect(() => {
+            // Attempt to restore access token from refresh cookie or localStorage
+            const initAuth = async () => {
+                try {
+                    await cookieTokenProvider.refreshToken?.();
+                } catch (error) {
+                    console.warn("Auth initialization failed:", error);
+                } finally {
+                    setIsReady(true);
+                }
+            };
+
+            initAuth();
+        }, []);
+
+        // Listen for auth:logout events dispatched by core.ts when token refresh fails
+        useEffect(() => {
+            const handleLogout = () => {
+                cookieTokenProvider.clearTokens();
+                setIsReady(true); // Keep app rendered (in unauthenticated state)
+            };
+
+            window.addEventListener("auth:logout", handleLogout);
+            return () => window.removeEventListener("auth:logout", handleLogout);
+        }, []);
+
+        // Replace with your app's loading component
+        if (!isReady) {
+            return <div>Loading...</div>;
+        }
+
+        return <>{children}</>;
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`LocalStorageTokenProvider.ts`**: Token Provider persisting in local storage.
+
+    ```typescript filename="auth/LocalStorageAuth/LocalStorageTokenProvider.ts"
+    // @internal — No changes needed
+    import { TokenProvider } from "../../config";
+    import { authConfig } from "../../config/authConfig";
+
+    /**
+     * LocalStorage Token Provider
+     * - Access Token & Refresh Token: Persisted in localStorage
+     * 
+     * Edit `authConfig.ts` to customize routes, storage keys, and refresh payload.
+     */
+
+    let accessToken: string | null = null;
+
+    interface LocalStorageTokenProvider extends TokenProvider {
+        setTokens: (params: { accessToken: string; refreshToken?: string }) => void;
+        clearTokens: () => void;
+    }
+
+    export const localStorageTokenProvider: LocalStorageTokenProvider = {
+        getToken: () => {
+            if (accessToken) return accessToken;
+            if (typeof window !== "undefined") {
+                return localStorage.getItem(authConfig.accessTokenKey);
+            }
+            return null;
+        },
+
+        // Called on login/signup success
+        setTokens: ({ accessToken: newAccessToken, refreshToken }) => {
+            accessToken = newAccessToken;
+            if (typeof window !== "undefined") {
+                if (refreshToken) {
+                    localStorage.setItem(authConfig.refreshTokenKey, refreshToken);
+                    localStorage.removeItem(authConfig.accessTokenKey);
+                } else {
+                    localStorage.setItem(authConfig.accessTokenKey, newAccessToken);
+                    localStorage.removeItem(authConfig.refreshTokenKey);
+                }
+            }
+        },
+
+        // Called on logout
+        clearTokens: () => {
+            accessToken = null;
+            if (typeof window !== "undefined") {
+                localStorage.removeItem(authConfig.refreshTokenKey);
+                localStorage.removeItem(authConfig.accessTokenKey);
+            }
+        },
+
+        // Exchange refresh token for a new access token
+        refreshToken: async () => {
+            try {
+                if (typeof window === "undefined") return null;
+
+                const storedRefreshToken = localStorage.getItem(authConfig.refreshTokenKey);
+
+                // Fallback: use stored access token if no refresh token
+                if (!storedRefreshToken) {
+                    const storedAccessToken = localStorage.getItem(authConfig.accessTokenKey);
+                    if (storedAccessToken) {
+                        accessToken = storedAccessToken;
+                        return accessToken;
+                    }
+                    throw new Error("No refresh token found");
+                }
+
+                const response = await authConfig.refreshWithPayload(storedRefreshToken);
+
+                const { accessToken: newAccess, refreshToken: newRefresh } = response.data;
+                accessToken = newAccess;
+
+                if (newRefresh) {
+                    localStorage.setItem(authConfig.refreshTokenKey, newRefresh);
+                }
+
+                return accessToken;
+            } catch {
+                console.warn("Refresh failed, logging out...");
+                accessToken = null;
+                localStorage.removeItem(authConfig.refreshTokenKey);
+                localStorage.removeItem(authConfig.accessTokenKey);
+                return null;
+            }
+        },
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`LocalStorageAuthGuard.tsx`**: Auth Guard for local storage strategy.
+
+    ```tsx filename="auth/LocalStorageAuth/LocalStorageAuthGuard.tsx"
+    // @internal — No changes needed
+    "use client";
+
+    import { useEffect, useState } from "react";
+    import { localStorageTokenProvider } from "./LocalStorageTokenProvider";
+    import { authConfig } from "@/api-services/config";
+
+    /**
+     * Restores the user session on mount by exchanging the stored refresh token.
+     * Wrap your root layout with `<LocalStorageAuthGuard>`. Configure in `authConfig.ts`.
+     */
+
+    export const LocalStorageAuthGuard = ({
+        children,
+    }: {
+        children: React.ReactNode;
+    }) => {
+        const [isReady, setIsReady] = useState(false);
+
+        useEffect(() => {
+            // Attempt to restore session from stored tokens
+            const initAuth = async () => {
+                const hasRefreshToken = !!localStorage.getItem(authConfig.refreshTokenKey);
+                const hasAccessToken = !!localStorage.getItem(authConfig.accessTokenKey);
+
+                if (hasRefreshToken && localStorageTokenProvider?.refreshToken) {
+                    try {
+                        await localStorageTokenProvider.refreshToken();
+                    } catch (error) {
+                        console.warn("Session restoration failed:", error);
+                    }
+                } else if (hasAccessToken && localStorageTokenProvider?.refreshToken) {
+                    // Access-token-only fallback: let the provider restore from storage
+                    await localStorageTokenProvider.refreshToken();
+                }
+
+                setIsReady(true);
+            };
+
+            initAuth();
+        }, []);
+
+        // Listen for auth:logout events dispatched by core.ts when token refresh fails
+        useEffect(() => {
+            const handleLogout = () => {
+                localStorageTokenProvider.clearTokens();
+                setIsReady(true); // Keep app rendered (in unauthenticated state)
+            };
+
+            window.addEventListener("auth:logout", handleLogout);
+            return () => window.removeEventListener("auth:logout", handleLogout);
+        }, []);
+
+        // Replace with your app's loading component
+        if (!isReady) return <div>Loading...</div>;
+
+        return <>{children}</>;
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`NextAuthTokenProvider.ts`**: Token Provider for NextAuth.
+
+    ```typescript filename="auth/NextAuth/NextAuthTokenProvider.ts"
+    // @internal — No changes needed
+    import { TokenProvider } from "../../config";
+    import { getSession } from "next-auth/react";
+
+    // Extend the Session type to include accessToken
+    declare module "next-auth" {
+        interface Session {
+            accessToken?: string;
+        }
+    }
+    // TokenProvider for NextAuth.js - retrieves token from session
+    interface NextAuthTokenProvider extends TokenProvider {
+        setTokens: (params: { accessToken: string; refreshToken?: string }) => void;
+        clearTokens: () => void;
+    }
+
+    export const nextAuthTokenProvider: NextAuthTokenProvider = {
+        getToken: async () => {
+            const session = await getSession();
+            return (session?.accessToken as string) || null;
+        },
+        refreshToken: undefined,
+
+        // Placeholder methods for compatibility with other providers
+        // NextAuth manages these internally via session
+        setTokens: () => {
+            if (process.env.NODE_ENV === "development") {
+                console.warn(
+                    "[NextAuthTokenProvider] setTokens is a no-op. NextAuth manages tokens via session.",
+                );
+            }
+        },
+        clearTokens: () => {
+            if (process.env.NODE_ENV === "development") {
+                console.warn(
+                    "[NextAuthTokenProvider] clearTokens is a no-op. Use signOut() from next-auth/react instead.",
+                );
+            }
+        },
+    };
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    **`NextAuthGuard.tsx`**: Auth Guard for NextAuth strategy.
+
+    ```tsx filename="auth/NextAuth/NextAuthGuard.tsx"
+    // @internal — No changes needed
+    "use client";
+
+    import { useSession } from "next-auth/react";
+    import { useEffect } from "react";
+    import { useRouter } from "next/navigation";
+    import { authConfig } from "../../config/authConfig";
+    // import { nextAuthTokenProvider } from "./NextAuthTokenProvider";
+
+    /**
+     * Authentication guard wrapper for NextAuth.js
+     * 
+     * Protects routes by redirecting unauthenticated users to the path configured
+     * in `authConfig.ts`. Wraps components that require authentication.
+     */
+    export const NextAuthGuard = ({
+        children,
+    }: {
+        children: React.ReactNode;
+    }) => {
+        const { data: session, status } = useSession();
+        const router = useRouter();
+
+        // Redirect unauthenticated users using authConfig route
+        useEffect(() => {
+            if (status === "unauthenticated") {
+                // Redirect using the path set in authConfig
+                router.push(authConfig.loginUrl);
+            }
+        }, [status, router]);
+
+        // Listen for auth:logout events dispatched by core.ts when token refresh fails
+        useEffect(() => {
+            const handleLogout = () => {
+                // signOut() from next-auth will clear the session and redirect
+                import("next-auth/react").then(({ signOut }) => signOut());
+            };
+
+            window.addEventListener("auth:logout", handleLogout);
+            return () => window.removeEventListener("auth:logout", handleLogout);
+        }, []);
+
+        // Optional: Set custom headers from session data when authenticated
+        useEffect(() => {
+            if (status === "authenticated" && session) {
+                // e.g. nextAuthTokenProvider.setCustomHeaders({ 'x-tenant-id': session.tenantId });
+            }
+        }, [status, session]);
+
+        // Replace with your app's loading component
+        if (status === "loading") {
+            return <div>Loading...</div>;
+        }
+
+        // Render protected content only when authenticated
+        if (status === "authenticated") {
+            return <>{children}</>;
+        }
+
+        // Return null during redirect to prevent flash of protected content
+        return null;
+    };
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `providers/` - Application Providers
+
+Contains authentication and query provider wrappers.
+
+<Tabs items={['QueryProvider.tsx']}>
+  <Tabs.Tab>
+    **`QueryProvider.tsx`**: React context provider for React Query client setup.
+
+    ```tsx filename="providers/QueryProvider.tsx"
+    // @internal — No changes needed
+    "use client";
+
+    import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+    import { ReactNode, useState } from "react";
+
+    export function QueryProvider({ children }: { children: ReactNode }) {
+        // Create QueryClient inside useState to prevent shared state across SSR requests
+        const [queryClient] = useState(() => new QueryClient());
+
+        return (
+            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        );
+    }
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### `types/` - TypeScript Interfaces
+
 Contains the TypeScript interfaces for your API requests and responses.
 - **Organization**: Subfolders correspond to your API modules.
 - **Full Type Safety**: Automatically imported into definitions and hooks.
+
+```typescript filename="types/authentication/index.ts"
+export interface post_login {
+  access_token: string;
+  refresh_token: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
+export interface post_freelancerRegister {
+  id: string;
+  email: string;
+  status: string;
+}
+
+export interface post_businessRegister {
+  id: string;
+  company_name: string;
+  status: string;
+}
+
+export interface get_logout {
+  success: boolean;
+  message: string;
+}
+```
