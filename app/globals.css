@@ -7,6 +7,7 @@
     --nextra-primary-saturation: 100%;
 
     /* Backgrounds */
+    --nextra-bg: 255 255 255;
     --sh-block-bg: #f6f7f9;
 }
 
@@ -31,6 +32,15 @@ body {
 /* Navbar adjustments */
 nav {
     backdrop-filter: blur(12px);
+}
+
+/* Mobile nav dropdown background fix (production) */
+.nextra-mobile-nav {
+    background-color: #fff !important;
+}
+
+[class*='dark'] .nextra-mobile-nav {
+    background-color: #111 !important;
 }
 
 /* Code block adjustments */
@@ -219,4 +229,122 @@ div.nextra-border a {
     /* Smaller size to match TOC items */
     font-weight: 500 !important;
     color: #666;
+}
+
+/* ============================================
+   Nextra 4 / Tailwind v4 Responsive Fix
+   ============================================
+   Nextra 4 uses Tailwind CSS v4 with an "x:" prefix.
+   Tailwind v4 compiles responsive variants via CSS nesting,
+   which Next.js 14's production CSS optimizer strips.
+   These manual @media rules replicate the missing responsive utilities.
+   ============================================ */
+
+/* --- Mobile-first (max-width: below md) --- */
+@media (max-width: 767.98px) {
+    .x\:max-md\:hidden {
+        display: none !important;
+    }
+
+    .x\:max-md\:h-full {
+        height: 100% !important;
+    }
+
+    .x\:max-md\:overflow-hidden {
+        overflow: hidden !important;
+    }
+
+    .x\:max-md\:me-auto {
+        margin-inline-end: auto !important;
+    }
+
+    .x\:max-md\:break-all {
+        word-break: break-all !important;
+    }
+
+    .x\:max-md\:sticky {
+        position: sticky !important;
+    }
+}
+
+/* --- md breakpoint (768px+) --- */
+@media (min-width: 768px) {
+    .x\:md\:hidden {
+        display: none !important;
+    }
+
+    .x\:md\:px-12 {
+        padding-left: 3rem !important;
+        padding-right: 3rem !important;
+    }
+
+    .x\:md\:text-lg {
+        font-size: 1.125rem !important;
+        line-height: 1.75rem !important;
+    }
+
+    .x\:md\:text-sm {
+        font-size: 0.875rem !important;
+        line-height: 1.25rem !important;
+    }
+
+    .x\:md\:justify-start {
+        justify-content: flex-start !important;
+    }
+
+    .x\:md\:w-64 {
+        width: 16rem !important;
+    }
+
+    .x\:md\:w-\[576px\] {
+        width: 576px !important;
+    }
+
+    .x\:md\:min-h-28 {
+        min-height: 7rem !important;
+    }
+
+    .x\:md\:max-h-\[min\(calc\(100vh-5rem\)\2c 400px\)\]\! {
+        max-height: min(calc(100vh - 5rem), 400px) !important;
+    }
+
+    .x\:md\:-mx-8 {
+        margin-left: -2rem !important;
+        margin-right: -2rem !important;
+    }
+}
+
+/* --- max-xl breakpoint (below 1280px) --- */
+@media (max-width: 1279.98px) {
+    .x\:max-xl\:hidden {
+        display: none !important;
+    }
+}
+
+/* --- xl breakpoint (1280px+) --- */
+@media (min-width: 1280px) {
+    .x\:xl\:me-\[calc\(50\%-50vw\)\] {
+        margin-inline-end: calc(50% - 50vw) !important;
+    }
+
+    .x\:xl\:ms-\[calc\(50\%-50vw\+16rem\)\] {
+        margin-inline-start: calc(50% - 50vw + 16rem) !important;
+    }
+}
+
+/* --- 2xl breakpoint (1536px+) --- */
+@media (min-width: 1536px) {
+    .x\:2xl\:-mx-24 {
+        margin-left: -6rem !important;
+        margin-right: -6rem !important;
+    }
+}
+
+/* --- Print --- */
+@media print {
+
+    .x\:print\:hidden,
+    .x\:print\:\[display\:none\] {
+        display: none !important;
+    }
 }
