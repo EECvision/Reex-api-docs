@@ -75,7 +75,7 @@ This folder contains the core configuration for the HTTP client. Click the tabs 
     **`clients.ts`**: Configuration for API clients.
 
     ```typescript filename="config/clients.ts"
-    // @user-config — changes needed: Uncomment the auth strategy that matches your authentication strategy
+    // @user-config — changes needed: Uncomment the auth strategy that matches your setup
 
     /**
      * Available auth strategies:
@@ -99,6 +99,7 @@ This folder contains the core configuration for the HTTP client. Click the tabs 
     **`constants.ts`**: Base URLs and environment config.
 
     ```typescript filename="config/constants.ts"
+    // @user-config — changes needed: Set your API base URL
     export const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.example.io";
     ```
   </Tabs.Tab>

@@ -5,7 +5,8 @@ Getting up and running with Reex API Builder is designed to be frictionless. The
 ### Prerequisites
 Before installing, ensure your environment meets the following requirements:
 - **Node.js**: Installed and configured.
-- **React**: Your project must be a React-based application.
+- **React**: Your project must be a React-based application (e.g., Next.js, Vite, Create React App).
+- **TypeScript**: Your project must be a TypeScript application.
 - **Package Manager**: `npm`, `yarn`, or `pnpm`.
 
 ### Step 1: Install the CLI
@@ -16,34 +17,79 @@ Open your terminal and install the builder globally:
 npm install -g reex-api-builder
 ```
 
-### Step 2: Initialize Your Project
+### Step 2: Initialize Your Project & Dependency Management
 Navigate to the root directory of your React project. Run the initialization command to launch Reex API Builder in Project Mode:
 ```bash
 reex-build
 ```
 
-### Step 3: Automatic Dependency Management
-When you run the command above, Reex API Builder performs a health check on your project. It automatically detects if the necessary data-fetching libraries are present.
-
-If they are missing, Reex API Builder will install them for you automatically:
+When you run this command, Reex API Builder performs a health check on your project. It automatically detects if the required dependencies are present. If they are missing, it will install them automatically:
 - **Axios**: For handling HTTP requests.
 - **TanStack Query (React Query)**: For robust server state management.
+- **next-auth**: For robust authentication and user session management in Next.js applications.
+- **cookies-next**: For seamless cookie management on both client and server sides.
 
-### Step 4: Configure the Provider
-Reex API Builder generates a dedicated Providers component to manage the query client context. You must wrap your application with this provider to enable the generated hooks.
+In addition to installing dependencies, this command will generate an `api-services` directory in your project root. This dedicated folder will house all of your generated API hooks, models, authentication guards, and providers.
 
-1. Open your project's root file (usually `App.tsx`, `main.tsx`, or `index.tsx`).
-2. Import the `QueryProvider` from the newly created `api-services/providers` folder.
-3. Wrap your root component:
+Then, the application launches and automatically opens your browser to: **[https://reex-api-builder.toolshq.app/?localPort=4000](https://reex-api-builder.toolshq.app/?localPort=4000)**
+
+You will be prompted by your browser to toggle your **Local network** permissions. The local network access enables communication between the Reex API Builder and your local project files.
+
+![Local Network Permission Prompt](../../../assets/localport.png)
+
+> **Note:** You can run different projects simultaneously by switching ports with the `-p` flag. For example:
+> ```bash
+> reex-build -p 4002
+> ```
+
+### Step 3: Configure the Providers
+Reex API Builder generates dedicated provider components to manage both the query client context and authentication. You must wrap your application with these providers to enable the generated hooks, manage API state, and handle user sessions.
+
+1. Open your project's root file (e.g., `layout.tsx` for Next.js App Router, or `App.tsx` for standard React).
+2. Import the `QueryProvider` and your chosen Auth Provider from the newly generated `api-services` directory.
+3. Wrap your root layout or component with both providers.
+
+Here is a sample provider configuration in a Next.js app:
 
 ```tsx
-import { QueryProvider } from './api-services/providers';
+import "./globals.css";
+import { QueryProvider } from "@/api-services/providers/QueryProvider";
+import { LocalStorageAuthGuard } from "@/api-services/auth/LocalStorageAuth/LocalStorageAuthGuard";
 
-function App() {
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <QueryProvider>
-      <YourApp />
-    </QueryProvider>
+    <html lang="en">
+      <body>
+        <QueryProvider>
+          <LocalStorageAuthGuard> {children} </LocalStorageAuthGuard>
+        </QueryProvider>
+      </body>
+    </html>
   );
 }
 ```
+
+As seen in the example, there are 2 providers to be wrapped:
+- **QueryProvider**: Enables the use of TanStack queries. 
+- **AuthProvider** (e.g., `LocalStorageAuthGuard`): Makes it easy to manage user sessions and authentication in the app. The auth provider will be explained in depth in the [architecture](../architecture) part of the documentation.
+
+### Step 4: Import a Collection & Configure Authentication
+Once initialized, navigate to the Reex API Builder UI (e.g., `http://localhost:4000`) and import the API collection you want to integrate.
+
+After importing a collection, the `api-services` directory will be updated with the following:
+- **`definitions/` folder**: Added to structure your API definitions.
+- **`generated/` folder**: Updated with React Query hooks for all the REST endpoints from the imported collection.
+- **`types/` folder**: Updated with TypeScript type definitions for all endpoints. Types default to `unknown` until they are explicitly updated manually or from the UI.
+
+**Important Note on Authentication Configuration:**
+After generating your API services, you must check the `authConfig` file within your `api-services/auth` module. You are required to update specific details to match your application's authentication flow. Be sure to configure the following parameters:
+- `login` URL
+- `logout` URL
+- `logoutMethod` GET | POST
+- `refreshWithCookie` method
+- `refreshWithToken` method
