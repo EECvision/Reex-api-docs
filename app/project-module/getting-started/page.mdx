@@ -79,12 +79,12 @@ As seen in the example, there are 2 providers to be wrapped:
 - **AuthProvider** (e.g., `LocalStorageAuthGuard`): Makes it easy to manage user sessions and authentication in the app. The auth provider will be explained in depth in the [architecture](../architecture) part of the documentation.
 
 ### Step 4: Import a Collection & Configure Authentication
-Once initialized, navigate to the Reex API Builder UI (e.g., `http://localhost:4000`) and import the API collection you want to integrate.
+Navigate to the Reex API Builder UI **[https://reex-api-builder.toolshq.app/?localPort=4000](https://reex-api-builder.toolshq.app/?localPort=4000)** and import the API collection you want to integrate.
 
 After importing a collection, the `api-services` directory will be updated with the following:
-- **`definitions/` folder**: Added to structure your API definitions.
-- **`generated/` folder**: Updated with React Query hooks for all the REST endpoints from the imported collection.
-- **`types/` folder**: Updated with TypeScript type definitions for all endpoints. Types default to `unknown` until they are explicitly updated manually or from the UI.
+- **`definitions/` folder**: A well-defined REST API structure based on the imported collection.
+- **`generated/` folder**: React Query hooks for all REST endpoints from the definitions.
+- **`types/` folder**: TypeScript type definitions for all defined endpoint responses. Types default to `unknown` until explicitly updated in the Reex API Builder UI by making a call to the endpoint and saving the interface.
 
 **Important Note on Authentication Configuration:**
 After generating your API services, you must check the `authConfig` file within your `api-services/auth` module. You are required to update specific details to match your application's authentication flow. Be sure to configure the following parameters:
