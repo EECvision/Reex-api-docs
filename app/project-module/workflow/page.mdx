@@ -3,25 +3,34 @@
 Project Mode connects the Reex API Builder UI directly to your local codebase, creating a live link between your API specifications and your frontend logic.
 
 ### Two-Way Sync
+
 Reex API Builder maintains a live link between the UI and your code.
 
 - **UI to Code**: Actions in the UI are automatically written to your local files. Generated interfaces are saved to your `types` files, while actions like deleting an API, module, or collection, or generating an API template, update your `definitions` files.
 - **Code to UI**: `definitions` is the single source of truth. Any changes made to files in the `definitions` folder — whether editing or deleting — are automatically reflected in the UI.
 
 Two files influence the UI:
+
 - **`config/constants`** — update the `baseURL` value to change the base URL across all requests.
 - **`definitions` files** — update individual API request functions directly. Each endpoint function must accept exactly one parameter: either a single primitive (e.g., `id: string`) or a single object (e.g., `{ id, payload }: { id: string, payload: UpdatePayload }`).
+
 ```typescript
 // ❌ Not acceptable — multiple parameters
 post_sendMessage: (channelId: string, payload: MessagePayload): Promise =>
-  apiClient.post(`/channels/${channelId}/messages`, payload)
+  apiClient.post(`/channels/${channelId}/messages`, payload);
 
 // ✅ Acceptable — single object parameter
-post_sendMessage: ({ channelId, payload }: { channelId: string, payload: MessagePayload }): Promise =>
-  apiClient.post(`/channels/${channelId}/messages`, payload)
+post_sendMessage: ({
+  channelId,
+  payload,
+}: {
+  channelId: string;
+  payload: MessagePayload;
+}): Promise => apiClient.post(`/channels/${channelId}/messages`, payload);
 ```
 
 ### Handling Updates (Diff View)
+
 APIs change. When you re-import a collection, Reex API Builder protects your existing code from silent overwrites.
 
 - **Conflict Detection**: The tool compares the incoming collection against your current definitions.

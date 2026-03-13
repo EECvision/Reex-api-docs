@@ -1,4 +1,4 @@
-import { Tabs } from 'nextra/components'
+import { Tabs } from "nextra/components";
 
 # Architecture
 
@@ -46,6 +46,7 @@ This folder contains the core Axios configuration and the interceptors.
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`core.ts`**: Request interceptors & auth logic.
@@ -239,6 +240,7 @@ This folder contains the core Axios configuration and the interceptors.
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -277,6 +279,7 @@ Provides modular authentication strategies and guards.
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`manager.ts`**: Strategy switcher and dynamic proxy.
@@ -310,6 +313,7 @@ Provides modular authentication strategies and guards.
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`types.ts`**: Auth-related interfaces.
@@ -334,6 +338,7 @@ Provides modular authentication strategies and guards.
     ```
 
     </details>
+
   </Tabs.Tab>
     <Tabs.Tab>
     **Cookie Auth Strategy**
@@ -342,6 +347,7 @@ Provides modular authentication strategies and guards.
     <summary>View code</summary>
 
     ```tsx filename="cookie-auth/CookieAuthGuard.tsx"
+
 // @internal — No changes needed
 "use client";
 
@@ -349,9 +355,10 @@ import { useEffect, useState } from "react";
 import { cookieTokenProvider } from "./provider";
 import { apiClient } from "../../api-client";
 
-/**
- * Restores the user session on mount via the refresh endpoint.
- */
+/\*\*
+
+- Restores the user session on mount via the refresh endpoint.
+  \*/
 
 export const CookieAuthGuard = ({
     children,
@@ -398,8 +405,10 @@ export const CookieAuthGuard = ({
     }
 
     return <>{children}</>;
+
 };
-```
+
+````
 
     ```typescript filename="cookie-auth/provider.ts"
 // @internal — No changes needed
@@ -497,9 +506,10 @@ export const cookieTokenProvider: CookieTokenProvider = {
     }
   },
 };
-```
+````
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **Local Storage Strategy**
@@ -697,6 +707,7 @@ export const localStorageTokenProvider: LocalStorageTokenProvider = {
 ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **NextAuth Strategy**
@@ -711,70 +722,70 @@ import { getSession } from "next-auth/react";
 
 // Extend the Session type to include accessToken
 declare module "next-auth" {
-    interface Session {
-        accessToken?: string;
-    }
+  interface Session {
+    accessToken?: string;
+  }
 }
 let customHeaders: Record<string, string> | null = null;
 
 // TokenProvider for NextAuth.js - retrieves token from session
 interface NextAuthTokenProvider extends TokenProvider {
-    setTokens: (params: { accessToken: string; refreshToken?: string }) => void;
-    clearTokens: () => void;
-    setCustomHeaders: (headers: Record<string, string>) => void;
-    getCustomHeaders: () => Record<string, string>;
+  setTokens: (params: { accessToken: string; refreshToken?: string }) => void;
+  clearTokens: () => void;
+  setCustomHeaders: (headers: Record<string, string>) => void;
+  getCustomHeaders: () => Record<string, string>;
 }
 
 export const nextAuthTokenProvider: NextAuthTokenProvider = {
-    getToken: async () => {
-        const session = await getSession();
-        return (session?.accessToken as string) || null;
-    },
+  getToken: async () => {
+    const session = await getSession();
+    return (session?.accessToken as string) || null;
+  },
 
-    getCustomHeaders: () => {
-        if (customHeaders) return customHeaders;
-        if (typeof window !== "undefined") {
-            const stored = localStorage.getItem("custom_headers");
-            if (stored) {
-                try {
-                    return JSON.parse(stored);
-                } catch {
-                    return {};
-                }
-            }
+  getCustomHeaders: () => {
+    if (customHeaders) return customHeaders;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("custom_headers");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return {};
         }
-        return {};
-    },
+      }
+    }
+    return {};
+  },
 
-    setCustomHeaders: (headers) => {
-        customHeaders = headers;
-        if (typeof window !== "undefined") {
-            localStorage.setItem("custom_headers", JSON.stringify(headers));
-        }
-    },
+  setCustomHeaders: (headers) => {
+    customHeaders = headers;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("custom_headers", JSON.stringify(headers));
+    }
+  },
 
-    refreshToken: undefined,
+  refreshToken: undefined,
 
-    // Placeholder methods for compatibility with other providers
-    // NextAuth manages these internally via session
-    setTokens: () => {
-        if (process.env.NODE_ENV === "development") {
-            console.warn(
-                "[NextAuthTokenProvider] setTokens is a no-op. NextAuth manages tokens via session.",
-            );
-        }
-    },
-    clearTokens: () => {
-        customHeaders = null;
-        if (typeof window !== "undefined") {
-            localStorage.removeItem("custom_headers");
-        }
-        if (process.env.NODE_ENV === "development") {
-            console.warn(
-                "[NextAuthTokenProvider] clearTokens token part is a no-op. Use signOut() from next-auth/react instead.",
-            );
-        }
-    },
+  // Placeholder methods for compatibility with other providers
+  // NextAuth manages these internally via session
+  setTokens: () => {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[NextAuthTokenProvider] setTokens is a no-op. NextAuth manages tokens via session.",
+      );
+    }
+  },
+  clearTokens: () => {
+    customHeaders = null;
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("custom_headers");
+    }
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[NextAuthTokenProvider] clearTokens token part is a no-op. Use signOut() from next-auth/react instead.",
+      );
+    }
+  },
 };
 ```
 
@@ -813,12 +824,14 @@ const NextAuthGuardInner = ({ children }: { children: React.ReactNode }) => {
 ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
 ### `definitions/` - REST API Endpoints
 
 This folder contains `sample` API endpoint definitions.
+
 - **Editable**: You can make changes to these files to match your API.
 - **Two-Way Sync**: Changes here are reflected in the Reex API Builder UI.
 
@@ -866,6 +879,7 @@ This folder contains `sample` API endpoint definitions.
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`todos.ts`**: CRUD operations for Todos.
@@ -905,6 +919,7 @@ This folder contains `sample` API endpoint definitions.
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -978,6 +993,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`useAuthenticationQueries.ts`**: Hooks for Authentication.
@@ -1053,6 +1069,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`useTodosQueries.ts`**: Hooks for Todos.
@@ -1107,6 +1124,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -1146,7 +1164,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
         onSuccess: (data: any, variables, context) => {
           const accessToken = data?.accessToken ?? data?.access_token ?? data?.token;
           const refreshToken = data?.refreshToken ?? data?.refresh_token ?? data?.refresh;
-          
+
           activeTokenProvider?.setTokens?.({ accessToken, refreshToken });
 
           if (typeof window !== "undefined") {
@@ -1236,6 +1254,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -1258,6 +1277,7 @@ Auto-generated hooks based on your `definitions/`. These are regenerated wheneve
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -1353,6 +1373,7 @@ This folder is designed specifically for you to edit. It contains constants and 
     ```
 
     </details>
+
   </Tabs.Tab>
   <Tabs.Tab>
     **`constants.ts`**: Base URLs and environment config.
@@ -1365,6 +1386,7 @@ This folder is designed specifically for you to edit. It contains constants and 
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>
 
@@ -1390,5 +1412,6 @@ This file serves as the main entry point to all of your API definitions. It merg
     ```
 
     </details>
+
   </Tabs.Tab>
 </Tabs>

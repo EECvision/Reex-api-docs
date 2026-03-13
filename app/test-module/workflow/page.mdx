@@ -3,9 +3,11 @@
 Text Mode follows a simple create-and-test workflow:
 
 ### Step 1: Create a Collection
+
 Collections help you organize related requests together.
 
 **Creating Your First Collection:**
+
 1. Click the **"+ New Collection"** button
 2. Enter a name (e.g., "User API Testing", "Payment Endpoints")
 3. Click **Create**
@@ -14,15 +16,18 @@ Collections help you organize related requests together.
 > **Pro Tip:** Create separate collections for different APIs or features to keep your workspace organized.
 
 ### Step 2: Create Requests
+
 Under each collection, you can create multiple requests to test different endpoints.
 
 **Creating a Request:**
+
 1. **Select a collection** from the sidebar
 2. Click **"+ New Request"** button
 3. Enter a name (e.g., "Get User List", "Create Payment")
 4. The request panel opens
 
 ### Step 3: Configure the Request
+
 Build your request from scratch with full control over every detail.
 
 **Set HTTP Method**
@@ -33,6 +38,7 @@ Type or paste the full endpoint URL: `https://api.yourapp.com/users`
 
 **Add Query Parameters** (Optional)
 For GET requests or filtering:
+
 ```text
 Key         | Value
 ------------|-------
@@ -42,6 +48,7 @@ search      | john
 ```
 
 **Add Headers**
+
 ```text
 Key                  | Value
 ---------------------|-------------------------
@@ -52,6 +59,7 @@ X-Custom-Header      | custom-value
 
 **Add Request Body**
 For POST, PUT, PATCH requests:
+
 ```json
 {
   "firstName": "John",
@@ -62,18 +70,23 @@ For POST, PUT, PATCH requests:
 ```
 
 **Set Authentication**
+
 - Click the **Auth** tab
 - Choose **Bearer Token** (currently the only implemented auth type)
 - Enter your token
 
 ### Step 4: Send the Request
+
 Click the **Send** button to execute the request. Reex API Builder makes the request and displays the response in real-time.
 
 ### Step 5: View Response and Interface
+
 After sending a request, you'll see two panels:
 
 #### Response Panel
+
 **Response Body:**
+
 ```json
 {
   "data": [
@@ -91,6 +104,7 @@ After sending a request, you'll see two panels:
 ```
 
 **Status & Timing:**
+
 ```text
 Status: 200 OK
 Time: 234ms
@@ -98,7 +112,9 @@ Size: 487 bytes
 ```
 
 #### Interface Panel (TypeScript)
+
 Reex API Builder automatically generates TypeScript interfaces from the response:
+
 ```ts
 interface User {
   id: string;
@@ -118,6 +134,7 @@ interface GetUsersResponse {
 ```
 
 **Copy to Clipboard:**
+
 - Click the **Copy** icon to copy the interface
 - Paste directly into your TypeScript project
 

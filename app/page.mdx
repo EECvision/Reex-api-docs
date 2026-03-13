@@ -1,9 +1,10 @@
-import Link from 'next/link'
-import { Box, Terminal, Code } from 'lucide-react'
+import Link from "next/link";
+import { Box, Terminal, Code } from "lucide-react";
 
 # Introduction & Philosophy
 
 ### What is Reex API Builder?
+
 Reex API Builder is a developer-first tool designed to streamline the lifecycle of API testing and integration. While traditional tools focus heavily on backend verification, Reex API Builder is built specifically with the Frontend Developer in mind.
 
 It is not just an API client; it is a code generation engine. Reex API Builder connects directly to your local project, managing the gap between your API definitions and your UI components by generating strictly typed, production ready hooks directly into your codebase.
@@ -16,21 +17,29 @@ It is not just an API client; it is a code generation engine. Reex API Builder c
   playsInline
   loop
   poster="/docs/video-poster.jpg"
-  style={{ width: '100%', height: '400px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}
+  style={{
+    width: "100%",
+    height: "400px",
+    borderRadius: "12px",
+    border: "1px solid rgba(0,0,0,0.1)",
+  }}
 >
   <source src="/docs/demo-video.mp4" type="video/mp4" />
   Your browser does not support the video tag.
 </video>
 
 ### How is it different?
+
 The standard workflow for frontend developers often involves manually typing out API collections, creating interfaces, and writing repetitive fetch hooks.
 
 Reex API Builder eliminates this boilerplate.
+
 - **No more manual typing**: We generate your API collections for you.
 - **No more interface mismatch**: We generate TypeScript interfaces automatically.
 - **Seamless Integration**: The tool runs alongside your code, injecting the necessary logic directly into your project structure.
 
 ### Core Modules
+
 Reex API Builder is composed of three powerful modules to suit different stages of development:
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -48,19 +57,24 @@ Reex API Builder is composed of three powerful modules to suit different stages 
     </div>
   </Link>
 
-  <Link href="/standalone-module" className="flex flex-col justify-between p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl hover:shadow-lg transition-all hover:border-blue-500/50 group">
-    <div>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded-lg text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
-          <Terminal className="w-5 h-5" />
-        </div>
-        <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">Standalone Module</h3>
+<Link
+  href="/standalone-module"
+  className="flex flex-col justify-between p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl hover:shadow-lg transition-all hover:border-blue-500/50 group"
+>
+  <div>
+    <div className="flex items-center gap-3 mb-4">
+      <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded-lg text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
+        <Terminal className="w-5 h-5" />
       </div>
-      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-        Import and manage collections independently.
-      </p>
+      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+        Standalone Module
+      </h3>
     </div>
-  </Link>
+    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+      Import and manage collections independently.
+    </p>
+  </div>
+</Link>
 
   <Link href="/test-module" className="flex flex-col justify-between p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl hover:shadow-lg transition-all hover:border-blue-500/50 group">
     <div>

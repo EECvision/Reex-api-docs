@@ -3,6 +3,7 @@
 The `AuthProvider` wraps your application with the authentication context required by the generated hooks. Without it, API generation and query hooks will work as expected, but the authentication hooks (`useLogin`, `useLogout`, `useIsAuthenticated`) will not be available — you will have to manually store and manage user sessions.
 
 Import both providers from `api-services` and wrap your root layout:
+
 ```typescript filename="app/layout.tsx"
 import { QueryProvider } from "@/api-services/providers/QueryProvider";
 import { AuthProvider } from "@/api-services/auth/AuthProvider";
@@ -31,6 +32,7 @@ The `AuthProvider` accepts a `strategy` prop that determines how tokens are stor
 #### `localstorage`
 
 > Use this strategy if your backend returns an `access_token` and/or `refresh_token` in the login response. Reex API Builder will automatically store these tokens, attach them to outgoing requests, and handle silent refresh when the access token expires.
+
 ```typescript filename="app/layout.tsx"
 <AuthProvider strategy="localstorage">
   {children}
@@ -42,6 +44,7 @@ The `AuthProvider` accepts a `strategy` prop that determines how tokens are stor
 #### `cookie`
 
 > Use this strategy if your backend manages authentication through httpOnly cookies. In this setup, the server sets and rotates the refresh token directly via `Set-Cookie` headers — no tokens are returned in the response body. The provider handles silent refresh by sending credentialed requests to your refresh endpoint, and the browser manages the cookie automatically.
+
 ```typescript filename="app/layout.tsx"
 <AuthProvider strategy="cookie">
   {children}
@@ -55,6 +58,7 @@ The `AuthProvider` accepts a `strategy` prop that determines how tokens are stor
 > Use this strategy if you are building a Next.js application and using Auth.js (NextAuth) for authentication and session management. In this setup, NextAuth owns the session lifecycle — Reex API Builder reads the `accessToken` from the active session and attaches it to outgoing requests.
 
 Since Reex API Builder needs access to the `accessToken` from the NextAuth session, you must extend the NextAuth types and configure its callbacks to expose the token:
+
 ```typescript
 // Extend NextAuth types to include accessToken
 declare module "next-auth" {
@@ -81,6 +85,7 @@ callbacks: {
 ```
 
 Then wrap your layout as usual:
+
 ```typescript filename="app/layout.tsx"
 <AuthProvider strategy="next-auth">
   {children}
@@ -94,6 +99,7 @@ Then wrap your layout as usual:
 ### Configuring Your Backend
 
 Regardless of the strategy, open `api-services/user-config/auth.ts` and update the values to match your backend:
+
 ```typescript filename="user-config/auth.ts"
 export const authConfig = {
   /** Redirect path for unauthenticated users */
@@ -116,7 +122,9 @@ export const authConfig = {
 
   /** Cookie strategy: refresh via httpOnly cookie */
   refreshWithCookie: async () => {
-    return await axios.post(authConfig.refreshEndpoint, undefined, { withCredentials: true });
+    return await axios.post(authConfig.refreshEndpoint, undefined, {
+      withCredentials: true,
+    });
   },
 
   /** localstorage strategy: refresh via stored token payload */
