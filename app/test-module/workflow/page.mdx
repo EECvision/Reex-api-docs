@@ -1,65 +1,55 @@
 # The Workflow
 
-Text Mode follows a simple create-and-test workflow:
+Text Mode follows a simple create-and-test workflow.
 
 ### Step 1: Create a Collection
 
 Collections help you organize related requests together.
 
-**Creating Your First Collection:**
+1. Click **+ New Collection**.
+2. Enter a name (e.g., "User API Testing", "Payment Endpoints").
+3. Click **Create**. The collection appears in the sidebar.
 
-1. Click the **"+ New Collection"** button
-2. Enter a name (e.g., "User API Testing", "Payment Endpoints")
-3. Click **Create**
-4. Collection appears in the sidebar
+> **Tip:** Create separate collections for different APIs or features to keep your workspace organized.
 
-> **Pro Tip:** Create separate collections for different APIs or features to keep your workspace organized.
+---
 
-### Step 2: Create Requests
+### Step 2: Create a Request
 
-Under each collection, you can create multiple requests to test different endpoints.
+1. Select a collection from the sidebar.
+2. Click **+ New Request**.
+3. Enter a name (e.g., "Get User List", "Create Payment").
+4. The request panel opens.
 
-**Creating a Request:**
-
-1. **Select a collection** from the sidebar
-2. Click **"+ New Request"** button
-3. Enter a name (e.g., "Get User List", "Create Payment")
-4. The request panel opens
+---
 
 ### Step 3: Configure the Request
 
-Build your request from scratch with full control over every detail.
+**HTTP Method**: Choose from the dropdown — `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`.
 
-**Set HTTP Method**
-Choose from the dropdown: `GET | POST | PUT | PATCH | DELETE | HEAD | OPTIONS`
-
-**Enter the URL**
-Type or paste the full endpoint URL: `https://api.yourapp.com/users`
-
-**Add Query Parameters** (Optional)
-For GET requests or filtering:
-
+**URL**: Type or paste the full endpoint URL:
 ```text
-Key         | Value
-------------|-------
-page        | 1
-limit       | 10
-search      | john
+https://api.yourapp.com/users
 ```
 
-**Add Headers**
-
+**Query Parameters** (optional):
 ```text
-Key                  | Value
----------------------|-------------------------
-Content-Type         | application/json
-Authorization        | Bearer eyJhbGc...
-X-Custom-Header      | custom-value
+Key      | Value
+---------|-------
+page     | 1
+limit    | 10
+search   | john
 ```
 
-**Add Request Body**
-For POST, PUT, PATCH requests:
+**Headers**:
+```text
+Key             | Value
+----------------|-------------------------
+Content-Type    | application/json
+Authorization   | Bearer eyJhbGc...
+```
 
+**Request Body** (for POST, PUT, PATCH):
 ```json
 {
   "firstName": "John",
@@ -69,24 +59,23 @@ For POST, PUT, PATCH requests:
 }
 ```
 
-**Set Authentication**
+**Authentication**: Click the **Auth** tab, select **Bearer Token**, and enter your token. *(Bearer Token is currently the only supported auth type.)*
 
-- Click the **Auth** tab
-- Choose **Bearer Token** (currently the only implemented auth type)
-- Enter your token
+---
 
 ### Step 4: Send the Request
 
-Click the **Send** button to execute the request. Reex API Builder makes the request and displays the response in real-time.
+Click **Send**. Reex API Builder executes the request and displays the response in real-time.
+
+---
 
 ### Step 5: View Response and Interface
 
-After sending a request, you'll see two panels:
+After sending, two panels are displayed.
 
 #### Response Panel
 
-**Response Body:**
-
+Shows the response body along with status and timing information:
 ```json
 {
   "data": [
@@ -102,20 +91,16 @@ After sending a request, you'll see two panels:
   }
 }
 ```
-
-**Status & Timing:**
-
 ```text
 Status: 200 OK
-Time: 234ms
-Size: 487 bytes
+Time:   234ms
+Size:   487 bytes
 ```
 
-#### Interface Panel (TypeScript)
+#### Interface Panel
 
-Reex API Builder automatically generates TypeScript interfaces from the response:
-
-```ts
+Reex API Builder automatically generates a TypeScript interface from the response:
+```typescript
 interface User {
   id: string;
   firstName: string;
@@ -133,9 +118,6 @@ interface GetUsersResponse {
 }
 ```
 
-**Copy to Clipboard:**
+Click the **Copy** icon to copy the interface and paste it directly into your project.
 
-- Click the **Copy** icon to copy the interface
-- Paste directly into your TypeScript project
-
-> **Auto-generated:** Interfaces update automatically each time you send a request with a different response structure.
+> **Note:** Interfaces update automatically each time you send a request with a new or different response structure.
