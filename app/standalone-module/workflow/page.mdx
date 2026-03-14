@@ -14,11 +14,13 @@ Click the **Import** button in the toolbar to bring in your API collection.
 #### Import Methods
 
 **From File:**
+
 1. Click **Import → From File**.
-2. Select your `.json` file. *(YAML import is not yet supported.)*
+2. Select your `.json` file. _(YAML import is not yet supported.)_
 3. The collection appears in the sidebar.
 
 **From URL:**
+
 1. Click **Import → From URL**.
 2. Paste the API spec URL.
 3. Click **Fetch**.
@@ -42,6 +44,7 @@ When you select an endpoint, the request is automatically pre-configured with al
 **Base URL**: Automatically set from the collection and displayed at the top of the request panel. Click to edit if needed (e.g., switching from production to staging).
 
 **Parameters** (if needed):
+
 ```text
 Query Params:
   page: 1
@@ -56,6 +59,7 @@ Headers:
 ```
 
 **Request Body** (for POST/PUT/PATCH):
+
 ```json
 {
   "firstName": "John",
@@ -64,7 +68,7 @@ Headers:
 }
 ```
 
-**Authentication**: Click the **Auth** tab, select **Bearer Token**, and enter your token. *(Bearer Token is currently the only supported auth type.)*
+**Authentication**: Click the **Auth** tab, select **Bearer Token**, and enter your token. _(Bearer Token is currently the only supported auth type.)_
 
 #### Sending the Request
 
@@ -79,6 +83,7 @@ After sending a request, two panels are displayed.
 #### Response Panel
 
 Shows the response body along with status and timing information:
+
 ```json
 {
   "id": "user_123",
@@ -88,6 +93,7 @@ Shows the response body along with status and timing information:
   "createdAt": "2025-02-07T10:30:00Z"
 }
 ```
+
 ```text
 Status: 200 OK
 Time:   234ms
@@ -97,6 +103,7 @@ Size:   156 bytes
 #### Interface Panel
 
 Reex API Builder automatically generates a TypeScript interface from the response:
+
 ```typescript
 interface User {
   id: string;

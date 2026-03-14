@@ -28,11 +28,13 @@ Collections help you organize related requests together.
 **HTTP Method**: Choose from the dropdown — `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`.
 
 **URL**: Type or paste the full endpoint URL:
+
 ```text
 https://api.yourapp.com/users
 ```
 
 **Query Parameters** (optional):
+
 ```text
 Key      | Value
 ---------|-------
@@ -42,6 +44,7 @@ search   | john
 ```
 
 **Headers**:
+
 ```text
 Key             | Value
 ----------------|-------------------------
@@ -50,6 +53,7 @@ Authorization   | Bearer eyJhbGc...
 ```
 
 **Request Body** (for POST, PUT, PATCH):
+
 ```json
 {
   "firstName": "John",
@@ -59,7 +63,7 @@ Authorization   | Bearer eyJhbGc...
 }
 ```
 
-**Authentication**: Click the **Auth** tab, select **Bearer Token**, and enter your token. *(Bearer Token is currently the only supported auth type.)*
+**Authentication**: Click the **Auth** tab, select **Bearer Token**, and enter your token. _(Bearer Token is currently the only supported auth type.)_
 
 ---
 
@@ -76,6 +80,7 @@ After sending, two panels are displayed.
 #### Response Panel
 
 Shows the response body along with status and timing information:
+
 ```json
 {
   "data": [
@@ -91,6 +96,7 @@ Shows the response body along with status and timing information:
   }
 }
 ```
+
 ```text
 Status: 200 OK
 Time:   234ms
@@ -100,6 +106,7 @@ Size:   487 bytes
 #### Interface Panel
 
 Reex API Builder automatically generates a TypeScript interface from the response:
+
 ```typescript
 interface User {
   id: string;
