@@ -7,7 +7,7 @@ Getting up and running with Reex API Builder is designed to be frictionless. The
 Before installing, ensure your environment meets the following requirements:
 
 - **Node.js**: Installed and configured.
-- **React**: Your project must be a React-based application (e.g., Next.js, Vite, Create React App).
+- **React**: Your project must be a React-based application (e.g., Next.js, Vite, React Router).
 - **TypeScript**: Your project must be a TypeScript application.
 - **Package Manager**: `npm`, `yarn`, or `pnpm`.
 
@@ -65,7 +65,7 @@ After importing, the `api-services` directory will be updated with the following
 
 Reex API Builder generates dedicated provider components to manage query client context and authentication. Wrap your application with these providers to enable the generated hooks, manage API state, and handle user sessions.
 
-1. Open your project's root file (e.g., `layout.tsx` for Next.js App Router, or `App.tsx`, `root.tsx`, `main.tsx` for standard React).
+1. Open your project's root file (e.g., `layout.tsx` for Next.js App Router, or `root.tsx`, `main.tsx` for standard React).
 2. Import `QueryProvider` and your chosen `AuthProvider` from the `api-services` directory.
 3. Wrap your root layout or component with both providers.
 
